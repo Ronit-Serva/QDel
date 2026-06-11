@@ -9,11 +9,15 @@ def main():
 
 class CityGrid:
     def __init__(self, side_km: int, num_parallel_streets: int):
+
         self.side = side_km
         self.num_parallel_streets = num_parallel_streets
-        self.customer_locs = self.generate_locs().remove((0,0)) # remove the loc of the dark store from the list of available locs for customers
-        self.dark_store_loc = (0,0) # the loc of the dark store is fixed at the center of the city grid
-        self.assigned_locs = [] # to keep track of assigned locs to customers
+        # remove the loc of the dark store from the list of available locs for customers
+        self.customer_locs = self.generate_locs().remove((0,0)) 
+        # the loc of the dark store is fixed at the center of the city grid
+        self.dark_store_loc = (0,0) 
+        # to keep track of assigned locs to customers 
+        self.assigned_locs = [] 
     
     #generate the list of all available locs in the city grid
     def generate_locs(self):
@@ -48,13 +52,10 @@ class CityGrid:
     def route_length(cls, loc1, loc2):
         return abs(loc1[0] - loc2[0]) + abs(loc1[1] - loc2[1])
     
-    
-        
-
-
 
 class Customer:
     def __init__(self, env, loc):
+        self.state = "idle"
         self.env = env
         self.loc = loc
         self.id = uuid.uuid4()
@@ -66,7 +67,7 @@ class Customer:
             self.state = "idle"
             yield self.env.timeout(10)
             self.state = "ordering"
-            # suspend the process until ordering is complete
+            # suspend the process until ordering process is complete
             yield self.env.process(self.order())
             # some delay after the customr has ordered; 
             # this delay can be thought of as the time it takes to deliver the order
@@ -83,7 +84,10 @@ class Customer:
 # Each loc can be assigned to 4 customers as each location corresponds to a crossing which corresponds to 4 houses
 
 def customer_factory(env, num_customers, city_grid):
-    ...
+
+    customers = []
+    for _ in range(num_customers):
+        customers.append(Customer(env, city_grid.sample()))
 
     
     
