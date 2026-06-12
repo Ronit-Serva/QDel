@@ -1,3 +1,4 @@
+import random
 # think of creating a city_grid as creating an area in which the DarkStore is going to serve 
 # and where customers live
 class CityGrid:

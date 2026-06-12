@@ -10,4 +10,3 @@ class DarkStore:
         with open("order_data.csv", "a") as file:
             file.write(f"Customer ID: {customer.id}, Time: {ordering_time}\n")
 
-  

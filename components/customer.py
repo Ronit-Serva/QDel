@@ -1,3 +1,4 @@
+import csv
 import math
 import uuid
 import random
@@ -6,11 +7,47 @@ from city_model import CityGrid
 def main():
     ...
 
+# class for instantiating an order object
+class Order:
+    def __init__(self, customer, timestamp):
+
+        """
+        this will write the order data in "data/orders.csv" and assign
+        the generated order_key to the corresponding attribute. It can
+        give you access to read and modify order data
+        """
+        self.order_key = self.write_order(customer, timestamp)
+    
+    def write_order(customer, timestamp):
+        with open("data/orders.csv", "a") as file:
+            writer = csv.DictWriter(file, fieldnames=["order_key","customer_id","customer_type","customer_loc","timestamp"])
+            order_key = uuid.uuid4()
+            writer.writerow({"order_key": order_key,"customer_id": customer.id,"customer_type": customer.type,"customer_loc": customer.loc,"timestamp": timestamp})
+        
+        return order_key
+
+
+    # index into orders.csv and return the order dict containing order data of the specific order
+    # index with help of order_key attribute
+    def read_order(self):
+
+        with open("data/orders.csv", "r") as file:
+
+            reader = csv.DictReader(file)
+
+            for row in reader:
+                if row[0] == self.order_key:
+                    return row
+            
+
+        
+
 class Customer:
-    def __init__(self, env, loc):
-        self.state = "idle"
+    def __init__(self, env, loc, platform):
         self.env = env
         self.loc = loc
+        self.platform = platform
+        self.state = "idle"
         self.id = uuid.uuid4()
         self.action = env.process(self.run())
 
@@ -40,7 +77,9 @@ class Customer:
         ordering_time = r.randint(1, 5)  
         yield self.env.timeout(ordering_time)
         # Logic to place an order directly to the dark store.
-        DarkStore.place_order(customer=custom, ordering_time=self.env.now)
+        timestamp = self.env.now
+        order = Order(self, timestamp)
+        self.platform.place_order(order)
         print(f"Customer ({self.id}) has placed an order at T = {self.env.now}")
 
   
@@ -59,6 +98,8 @@ def customer_factory(env, num_customers):
         #assigns one location to 4 customers
         for _ in range(4):
             customers.append(Customer(env, loc=loc))
+            
+
     return customers
 
     
