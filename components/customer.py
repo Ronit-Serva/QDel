@@ -87,7 +87,7 @@ class Customer:
 # Creates desried number of customers by assigning them random locs in the city grid;
 # Each loc can be assigned to 4 customers as each location corresponds to a crossing which corresponds to 4 houses
 # num_customers should be such that num_customers = 4(n**2-1), n belong integer
-def customer_factory(env, num_customers):
+def customer_factory(env, num_customers, platform):
 
     x = (num_customers / 4) + 1 
     city_grid = CityGrid(side_km=4, num_parallel_streets=math.sqrt(x))
@@ -97,9 +97,8 @@ def customer_factory(env, num_customers):
         loc = city_grid.sample_loc()
         #assigns one location to 4 customers
         for _ in range(4):
-            customers.append(Customer(env, loc=loc))
+            customers.append(Customer(env, loc=loc, platform=platform))
             
-
     return customers
 
     
