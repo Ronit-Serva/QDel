@@ -42,18 +42,35 @@ class Platform:
         order.processor = processor.id
         order.rider = rider.id
 
-        # Step2: Initialize processing of that order; 
+        # Step2: process the order; by requesting a processor resource
         # Delivery process requests the processor resource on behalf of the given order
-        processor_request = processor.resource.request()
-        yield processor_request
+        
+        with processor.resource.request() as req:
+
+            yield req
+            processing_time = normal_sample(mean=2.25, std=0.4, range=[1.0, 3.25])
+            yield self.env.timeout(processing_time)
+
+            # log the timestamp when the order is processed.
+            order.processed_at = self.env.now
+            
+
+
+        # Step3: deliver the order
+        with rider.resource.request() as req: 
+            yield req
+
+            # log the timestamp when the order is picked.
+            order.picked_at = self.env.now
+
+            
+
+
+        
 
         # Step3: Occupy processor to get the order processed
-        processing_time = normal_sample(mean=2.25, std=0.4, range=[1.0, 3.25])
         
-        yield self.env.timeout(processing_time)
-
-        # log the timestamp when the order is processed.
-        order.processed_at = self.env.now
+        
 
         #Step4: Processor places order on dispatch tray; model as updating the order state to processed
         order.state = "processed"
@@ -82,4 +99,4 @@ def normal_sample(mean, std, range):
     while not a <= sample <= b:
         sample = np.random.normal(loc=mean, scale=std, size=1)
     
-    return sample
+    return round(sample[0], 2)

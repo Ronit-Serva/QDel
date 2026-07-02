@@ -8,7 +8,6 @@ class DarkStore:
 
     def create_processors(n):
         ...
-        return processors
         
 
     
