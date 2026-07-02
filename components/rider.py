@@ -1,12 +1,12 @@
+import simpy
 import uuid
 class Rider():
-    def __init__(self, env, dark_store):
-        self.env = env
-        self.dark_store = dark_store
+    def __init__(self, env, cap, dark_store):
 
-        # order_queue to store all the pending orders assigned to the rider
-        self.order_queue = []
-        self.rider_id = uuid.uuid4() 
+        self.resource = simpy.Resource(env, capacity=cap)
+        self.id = uuid.uuid4()
+        self.env = env
+        self.store = dark_store 
 
     ...
 

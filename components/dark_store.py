@@ -1,12 +1,14 @@
 class DarkStore:
+    def __init__(self, env, hash_processors, platform):
 
-    orders_db = []
-
-    @classmethod
-    def place_order(cls, customer, ordering_time):
-        cls.orders_db.append((customer.id, ordering_time))
-        print(f"Order recieved! Customer ID: {customer.id} Time: {ordering_time}")
+        self.env = env
         
-        with open("order_data.csv", "a") as file:
-            file.write(f"Customer ID: {customer.id}, Time: {ordering_time}\n")
+        self.platform = platform
+        self.processors = self.create_processors(hash_processors)
 
+    def create_processors(n):
+        ...
+        return processors
+        
+
+    

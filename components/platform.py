@@ -1,3 +1,5 @@
+import random
+import numpy as np
 # platform will handle order reception, storing order data customer data, passing it to the delivery systems and Dark store
 # platform can be thought of as the link between customers and our delivery systems
 # platform administers the delivery process, hence instructs each component of the delivery system to do its work
@@ -10,11 +12,12 @@ from components.order import Order
 
 class Platform:
 
-    def __init__(self, env, city, dark_store, riders):
+    def __init__(self, env, city, dark_store, riders, processors):
         self.env = env
         self.city = city
         self.dark_store = dark_store
         self.riders = riders
+        self.processors = processors
 
 
     # Places an order at the QComm platform
@@ -22,21 +25,44 @@ class Platform:
     def place_order(self, customer, timestamp):
         
         # has the effect of storing the order associated data in "orders.csv" and return the order_key
-        order_key = Order(customer, timestamp)
+        order = Order(customer, timestamp)
 
         print(f"Customer ({customer.id}) has placed an order at T = {timestamp}")
-        # once the order is placed execute the logic to deliver the order.
-        self.deliver(order_key)
+
+        # once the order is placed on the platform schedule its delivery process to run at the current time
+        self.env.process(self.delivery(order))
+
+    # The delivery process 
+    def delivery(self, order):
+
+        # Step1: Call sysA to assign a rider, processor, and route to deliver the order.
+        processor, rider = self.system_a(self.riders, self.city, order)
+
+        # log the rider and processor of the order
+        order.processor = processor.id
+        order.rider = rider.id
+
+        # Step2: Initialize processing of that order; 
+        # Delivery process requests the processor resource on behalf of the given order
+        processor_request = processor.resource.request()
+        yield processor_request
+
+        # Step3: Occupy processor to get the order processed
+        processing_time = normal_sample(mean=2.25, std=0.4, range=[1.0, 3.25])
+        
+        yield self.env.timeout(processing_time)
+
+        # log the timestamp when the order is processed.
+        order.processed_at = self.env.now
+
+        #Step4: Processor places order on dispatch tray; model as updating the order state to processed
+        order.state = "processed"
+
+        
 
 
-    # The platform side orchestration logic to get an order delivered 
-    def deliver(self, order_key):
 
-        # Step1: Call sysA to decide who'll deliver the order and length of delivery path
-        decision = self.system_a(self.riders, self.city, order_key)
-
-        # Start order delivery process when the order is placed
-        self.delivery(order_key)
+        
 
         
 
@@ -46,4 +72,14 @@ class Platform:
 
 
         ...
-        
+
+# sample a value from a normal distribution (mean,std)
+# range should be of the form [a, b], such that a <= sample <= b 
+def normal_sample(mean, std, range):
+
+    a, b = range
+    
+    while not a <= sample <= b:
+        sample = np.random.normal(loc=mean, scale=std, size=1)
+    
+    return sample

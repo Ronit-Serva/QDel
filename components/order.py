@@ -4,6 +4,24 @@ import uuid
 class Order:
     def __init__(self, customer, timestamp):
 
+        self.customer_id = customer.id
+        self.customer_loc = customer.loc
+        self.id = uuid.uuid4()
+        self.state = "processing"
+        
+        #UUIDs of processor and rider assigned to the delivery process of this order
+        self.processor = ""
+        self.rider = ""
+
+        self.placed_at = timestamp
+        self.processed_at = ""
+        self.picked_at = ""
+        self.delivered_at = ""
+
+        self.rider_payout = "" 
+
+
+
         """
         this will write the order data in "data/orders.csv" and assign
         the generated order_key to the corresponding attribute. It can
@@ -12,7 +30,9 @@ class Order:
         self.order_key = self.write_order(customer, timestamp)
     
     def write_order(customer, timestamp):
+
         with open("data/orders.csv", "a") as file:
+
             writer = csv.DictWriter(file, fieldnames=["order_key","customer_id","customer_type","customer_loc","timestamp"])
             order_key = uuid.uuid4()
             writer.writerow({"order_key": order_key,"customer_id": customer.id,"customer_type": customer.type,"customer_loc": customer.loc,"timestamp": timestamp})
