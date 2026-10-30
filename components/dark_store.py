@@ -1,12 +1,12 @@
+from .processor import Processor
+
+
 class DarkStore:
+    def __init__(self, env, num_processors, platform=None):
+        self.env, self.platform = env, platform
+        self.processors = self.create_processors(num_processors)
 
-    orders_db = []
-
-    @classmethod
-    def place_order(cls, customer, ordering_time):
-        cls.orders_db.append((customer.id, ordering_time))
-        print(f"Order recieved! Customer ID: {customer.id} Time: {ordering_time}")
-        
-        with open("order_data.csv", "a") as file:
-            file.write(f"Customer ID: {customer.id}, Time: {ordering_time}\n")
-
+    def create_processors(self, n):
+        if not isinstance(n, int) or n < 1:
+            raise ValueError("At least one processor is required")
+        return [Processor(self.env, self, f"P{i + 1:02d}") for i in range(n)]

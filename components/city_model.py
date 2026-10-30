@@ -1,53 +1,32 @@
+"""A square street grid; distances are kilometres, times are minutes."""
 import random
-# think of creating a city_grid as creating an area in which the DarkStore is going to serve 
-# and where customers live
+
+
 class CityGrid:
-    #num_parallel_streets must me an odd number
-    def __init__(self, side_km: int, num_parallel_streets: int):
-
+    def __init__(self, side_km=4, num_parallel_streets=9, rng=None):
+        if side_km <= 0 or num_parallel_streets < 3 or num_parallel_streets % 2 != 1:
+            raise ValueError("Use a positive side and an odd street count of at least 3")
         self.side = side_km
-        self.num_parallel_streets = num_parallel_streets
-        
+        self.num_parallel_streets = int(num_parallel_streets)
+        self.rng = rng or random.Random()
+        self.dark_store_loc = (0.0, 0.0)
         self.customer_locs = self.generate_locs()
-        # the loc of the dark store is fixed at the center of the city grid
-        self.dark_store_loc = (0.0, 0.0) 
-        # to keep track of assigned locs to customers 
-        self.assigned_locs = [] 
-    
-    #generate the list of all available locs in the city grid
+        self.assigned_locs = []
+
     def generate_locs(self):
-        locs = []
-        min_length = self.side / self.num_parallel_streets
+        half = self.num_parallel_streets // 2
+        step = self.side / (self.num_parallel_streets - 1)
+        return [(x * step, y * step) for x in range(-half, half + 1)
+                for y in range(-half, half + 1) if x or y]
 
-        i = (1 - self.num_parallel_streets) / 2
-        while i != (self.num_parallel_streets + 1) / 2:
-            
-            j = (1 - self.num_parallel_streets) / 2
-            while j != (self.num_parallel_streets + 1)/ 2:
-                locs.append((i * min_length, j * min_length))
-                j += 1
-            i += 1
-
-        # remove the loc of the dark store from the list of available locs for customer assignment
-        locs.remove((0.0, 0.0))
-        return locs
-    
-    # Sample a random locaton from the city grid; this can be used to assign a loc to a customer
     def sample_loc(self):
-        # first sample a random loc from the list of locs
-        r = random.Random()
-        
-        sampled_loc = r.choice(self.customer_locs)
-        
-        # then migrate it from "locs" to the "assigned_locs" list to keep track of it
-        self.customer_locs.remove(sampled_loc)
-        self.assigned_locs.append(sampled_loc)
+        if not self.customer_locs:
+            raise ValueError("No unassigned grid locations remain")
+        loc = self.rng.choice(self.customer_locs)
+        self.customer_locs.remove(loc)
+        self.assigned_locs.append(loc)
+        return loc
 
-        # then return the sampled loc
-        return sampled_loc
-    
-    # return manhattan distance between two locs; treat it as the optimal route length.
-    @classmethod
-    def route_length(cls, loc1, loc2):
+    @staticmethod
+    def route_length(loc1, loc2):
         return abs(loc1[0] - loc2[0]) + abs(loc1[1] - loc2[1])
-    

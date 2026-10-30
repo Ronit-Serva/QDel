@@ -1,3 +1,12 @@
 .DS_Store
 test.py
 data/
+.venv/
+__pycache__/
+*.pyc
+dist/
+.playwright/
+site/*
+!site/.openai/
+site/.openai/*
+!site/.openai/hosting.json
